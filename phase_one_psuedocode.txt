@@ -1,0 +1,53 @@
+function take_step():
+    # scan to the left
+    while (nothing on left side):
+        move_left(nudge)
+        collect_front_sensor_data()
+        total_nudges += nudge
+
+    # scan to the right
+    while (nothing on right side):
+        move_right(nudge)
+        collect_front_sensor_data()
+        total_nudges -= nudge
+
+    # move back to original place
+    while (total_nudges is not 0):
+        move_left(total_nudges)
+
+    
+    # front sensor data will tell us:
+    #   position in terms of time from original location
+    #   distance in front of us
+
+    object_position = sensor_data.find(position w/ lowest distance)
+
+    # if we are too close to the object move left or right
+    if (object_position) < (some threshold):
+        if (closest_position is negative):
+            move_left()
+        else
+            move_right()
+
+    go_forward()
+
+function alt_take_step():
+    if (front_sensor_data.distance < threshold):
+
+        # if there is more space on the left, go right by a nudge, otherwise, go left
+        if (left_sensor_data.distance > right_sensor_data.distance) {
+            where_to_go = right
+        } else {
+            where_to_go = left
+        }
+
+        # keep nudging our rover in the correct direction until there is nothing in front.
+        while (front_sensor_data.distance < threshold):
+            go(where_to_go, nudge)
+
+        # nudge it a few more times to account for our blind spots
+        go(nudge)
+        go(nudge)
+
+    go_forward()
+

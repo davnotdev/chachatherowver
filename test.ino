@@ -1,0 +1,83 @@
+#include "rowver.h"
+
+static bool testInit = false;
+
+void testLoop() {
+    if (!testInit) {
+        Serial.println(R"(Test Mode
+  Commands:
+      w[t]\n - Test wheels for t secs
+      u[t]\n - Read from ultrasonic sensors for t secs
+      g[t]\n - Read from gyroscope yaw sensors for t secs
+      s[x]\n - Spin for x iterations     
+      o[s]\n - Run wheels s iterations
+)");
+        testInit = true;
+    }
+
+    String buf = Serial.readStringUntil('\n');
+    buf.trim();
+
+    if (buf.length() == 0) {
+        return;
+    }
+        
+    char cmd = buf[0];
+    int argument = atoi(buf.c_str() + 1);
+
+    Serial.print("Got: ");
+    Serial.print(cmd);
+    Serial.print(" with ");
+    Serial.println(argument);
+
+    moveForward(0, 0);
+
+    switch (cmd) {
+        case 'w': {
+            unsigned long start = millis();
+            while (millis() - start < argument * 1000) {
+                moveForward(default_speed, default_speed);
+            }
+            } break;
+        case 'u': {
+            unsigned long start = millis();
+            while (millis() - start < argument * 1000) {
+                double fl = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
+                double fr = readDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
+                double sl = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
+                double sr = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
+
+                Serial.print(fl);
+                Serial.print('\t');
+                Serial.print(fr);
+                Serial.print('\t');
+                Serial.print(sl);
+                Serial.print('\t');
+                Serial.print(sr);
+                Serial.print('\n');
+            }
+            } break;
+        case 'g': {
+            unsigned long start = millis();
+            while (millis() - start < argument * 1000) {
+                Serial.println(readGyroYaw());
+            }
+            } break;
+        case 's':
+            for (int i = 0; i < argument; i++) {
+                moveSpin();
+            }
+            break;
+        case 'o':
+            for (int i = 0; i < argument; i++) {
+                moveForward(default_speed, default_speed);
+            }
+            break;
+        default:
+            Serial.print("Not a command: ");
+            Serial.println(buf);
+    }
+}
+
+
+
