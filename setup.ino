@@ -3,6 +3,13 @@ void setupDistanceSensor(int echo, int trigger) {
     pinMode(echo, INPUT);
 }
 
+void setupEncoders() {
+    pinMode(l1_encoder, INPUT);
+    pinMode(l2_encoder, INPUT);
+    pinMode(r1_encoder, INPUT);
+    pinMode(r2_encoder, INPUT);
+}
+
 void setupGyroscope() {
     Wire.begin();
     byte status = mpu.begin();
@@ -35,6 +42,8 @@ void setup() {
 
     setupGyroscope();
     // setupBT();
+
+    setupEncoders();
 
     moveForward(0, 0);
 

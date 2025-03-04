@@ -58,6 +58,26 @@ void oneSideBackForward(int enA, int in1, int in2, int enB, int in3, int in4, in
     analogWrite(enB, speed);
 }
 
+static int encoderCounter = 0; 
+static int encoderPrevReading = LOW;
+static double encoderMagic = 30.0 / 40.0;
+
+void updateEncoders() {
+    int reading = digitalRead(r1_encoder);
+    if (reading != encoderPrevReading) {
+        encoderCounter += 1;
+    }
+    encoderPrevReading = reading;
+}
+
+double readEncoderCms() {
+    return encoderMagic * encoderCounter;
+}
+
+void resetEncoders() {
+    encoderCounter = 0;
+}
+
 static int wheelTimer = 0;
 static int wheelLastTime = -1;
 

@@ -26,25 +26,31 @@
 #define l1_in2 9
 
 // Ultrasonic Sensors Front
-#define fl_ultrasonic_echo 25
-#define fl_ultrasonic_trigger 24
-#define fr_ultrasonic_echo 49
-#define fr_ultrasonic_trigger 48
+#define fl_ultrasonic_echo 23
+#define fl_ultrasonic_trigger 22
+#define fr_ultrasonic_echo 25
+#define fr_ultrasonic_trigger 24
 
 // Ultrasonic Sensors Side
-#define sl_ultrasonic_echo 23
-#define sl_ultrasonic_trigger 22
+#define sl_ultrasonic_echo 49
+#define sl_ultrasonic_trigger 48
 #define sr_ultrasonic_echo 51
 #define sr_ultrasonic_trigger 50
 
+// Encoder Pins
+#define l1_encoder 35
+#define l2_encoder 37
+#define r1_encoder 34
+#define r2_encoder 36
+
 // Course Correction Constants
-#define default_speed 180
-#define offset_speed 5
+#define default_speed 150
+#define offset_speed 25
 #define direction_correction_threshold 1
-#define move_forward_amount 30
+#define move_forward_cm 100
 
 // Phase One Object Detection
-#define object_front_threshold 15
+#define object_front_threshold 30
 
 // Scan Modulo
 #define scan_modulo 2

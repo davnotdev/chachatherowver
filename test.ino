@@ -9,8 +9,10 @@ void testLoop() {
       w[t]\n - Test wheels for t secs
       u[t]\n - Read from ultrasonic sensors for t secs
       g[t]\n - Read from gyroscope yaw sensors for t secs
-      s[x]\n - Spin for x iterations     
-      o[s]\n - Run wheels s iterations
+      s[x]\n - Spin for t secs     
+      o[s]\n - Run wheels s secs
+      c[c]\n - Go forward c cms
+      x[t]\n - Move with course correction for t secs
 )");
         testInit = true;
     }
@@ -68,11 +70,32 @@ void testLoop() {
                 moveSpin();
             }
             break;
-        case 'o':
-            for (int i = 0; i < argument; i++) {
+        case 'x': {
+            int leftSpeed, rightSpeed;
+            unsigned long start = millis();
+            while (millis() - start < argument * 1000) {
+                getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
+                moveForward(leftSpeed, rightSpeed);
+            }
+            moveForward(0, 0);
+        } break;
+        case 'o': {
+            unsigned long start = millis();
+            while (millis() - start < argument * 1000) {
                 moveForward(default_speed, default_speed);
             }
-            break;
+            moveForward(0, 0);
+          } break;
+        case 'c':
+            double reading = 0.0;
+              while (reading <= argument) {
+                  moveForward(default_speed, default_speed);
+                  reading = readEncoderCms();
+                  Serial.println(reading);
+                  updateEncoders();
+              }
+              moveForward(0, 0);
+              break;
         default:
             Serial.print("Not a command: ");
             Serial.println(buf);

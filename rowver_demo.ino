@@ -31,8 +31,9 @@ void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut) {
     *rightSpeedOut = rightSpeed;
 }
 
+// LOOK AT THIS
 void checkChaCha() {
-int distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
+    int distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
     int distanceCmFrontRight = readDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
     int distanceCmSideLeft = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
     int distanceCmSideRight = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
@@ -61,32 +62,40 @@ int distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_t
         }
     
         // Final Nudge to account for blind spot
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             if (nudge < 0) {
                 chachaLeft(default_speed);
             } else {
                 chachaRight(default_speed);
             }
-            delay(100);
+            delay(10);
         }
     }
 
     moveForward(0, 0);
 }
 
-void takeStep(int stepAmount) {
-    //checkChaCha();
+// LOOK AT THIS
+void takeStep() {
+    checkChaCha();
 
     // Move forward
-    LOGF(LOG_STEPS, "Moving Forward Now by amount: %d\n", stepAmount);
-    for (int i = 0; i < stepAmount; i++) {
-        int leftSpeed, rightSpeed;
-        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        moveForward(leftSpeed, rightSpeed);
-        delay(2000);
-        moveForward(0, 0);
-        checkChaCha();
+    LOGF(LOG_STEPS, "Moving Forward Now\n");
+    int leftSpeed, rightSpeed;
+    int encoderReading = readEncoderCms();
+    for (int i = 0; i < 10; i++) {
+        while (encoderReading <= move_forward_cm / 10.0) {
+            int oldEncoderReading = encoderReading;
+            checkChaCha();
+            encoderReading = oldEncoderReading;
+            updateEncoders();
+            encoderReading = readEncoderCms();
+            getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
+            moveForward(leftSpeed, rightSpeed);
+        }
+        resetEncoders();
     }
+    
     moveForward(0, 0);
 }
 
@@ -121,16 +130,9 @@ void loop() {
     moveForward(0, 0);
 
     // Obstacle Jungle
-    for (int i = 0; i < 4; i++) {
-        int stepAmount = move_forward_amount;
-
-        // Take an walk a bit more on first step.
-        if (i == 1) {
-            stepAmount -= 1;
-        } 
-
-        LOGF(LOG_STEPS, "Doing step %d amount: %d\n", i, stepAmount);
-        takeStep(stepAmount);
+    for (int i = 0; i < 100; i++) {
+        LOGF(LOG_STEPS, "Doing step %d\n", i);
+        takeStep();
     }
 
     moveForward(0, 0);
