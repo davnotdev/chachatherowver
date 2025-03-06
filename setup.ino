@@ -25,8 +25,8 @@ void setupGyroscope() {
 }
 
 void setupBT() {
-    BTserial.begin(btBaudRate);
-    Serial.print("BTserial started");
+    bluetooth.begin(9600);
+    Serial.print("Bluetooth started");
 }
 
 void setupMotor(int en, int in1, int in2) {
@@ -41,7 +41,7 @@ void setup() {
     moveForward(0, 0);
 
     setupGyroscope();
-    // setupBT();
+    setupBT();
 
     setupEncoders();
 

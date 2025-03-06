@@ -43,6 +43,12 @@
 #define r1_encoder 34
 #define r2_encoder 36
 
+// Bluetooth
+#define bt_tx 2
+#define bt_rx 3
+
+SoftwareSerial bluetooth(bt_tx, bt_rx);
+
 // Course Correction Constants
 #define default_speed 150
 #define offset_speed 25
@@ -56,17 +62,13 @@
 #define scan_modulo 2
 
 // Filtered Logging
-#define LOGF(LAYER, ...) if (LAYER) { char b[256]; snprintf(b, 256, __VA_ARGS__); Serial.print(b); }
+#define LOGF(LAYER, ...) if (LAYER) { char b[256]; snprintf(b, 256, __VA_ARGS__); bluetooth.print(b); Serial.print(b); }
 #define LOG_SENSOR_READINGS false
 #define LOG_COURSE_CORRECTION true
 #define LOG_STEPS true
 
 // Gyroscope Sensor
 MPU6050 mpu(Wire);
-
-// Bluetooth
-SoftwareSerial BTserial(2, 3);
-const long btBaudRate = 31250;
 
 // Builtin
 void setup();

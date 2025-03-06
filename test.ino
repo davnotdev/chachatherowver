@@ -13,6 +13,7 @@ void testLoop() {
       o[s]\n - Run wheels s secs
       c[c]\n - Go forward c cms
       x[t]\n - Move with course correction for t secs
+      b[c]\n - Send an ascii code via bluetooth and read
 )");
         testInit = true;
     }
@@ -96,6 +97,11 @@ void testLoop() {
               }
               moveForward(0, 0);
               break;
+        case 'b':
+            bluetooth.write((byte)argument);
+            while (bluetooth.available()) {
+                Serial.println("Got: ", bluetooth.read());
+            }
         default:
             Serial.print("Not a command: ");
             Serial.println(buf);
