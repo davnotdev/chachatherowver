@@ -1,0 +1,9 @@
+[submodule "rowvermapper/src/dataview/imgui"]
+	path = rowvermapper/src/dataview/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "rowvermapper/src/dataview/glfw"]
+	path = rowvermapper/src/dataview/glfw
+	url = https://github.com/glfw/glfw
+[submodule "rowvermapper/src/dataview/glm"]
+	path = rowvermapper/src/dataview/glm
+	url = https://github.com/g-truc/glm

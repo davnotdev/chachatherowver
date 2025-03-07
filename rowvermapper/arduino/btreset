@@ -1,0 +1,1 @@
+sudo rfcomm release /dev/rfcomm0 $1

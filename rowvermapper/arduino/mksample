@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [[ -z "$1" ]]; then
+    echo "No #"
+    exit 1
+fi
+
+if [[ ! -e "/dev/ttyACM0" ]]; then
+    echo "No serial"
+    exit 1
+fi
+
+filename="./sample$1.txt"
+./serialout > "$filename" &
+serialout_pid=$!
+tail -f "$filename" &
+tail_pid=$!
+read -n 1 -s
+
+kill "$serialout_pid"
+kill "$tail_pid"
+
