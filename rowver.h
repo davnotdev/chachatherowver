@@ -44,28 +44,30 @@
 #define r2_encoder 36
 
 // Bluetooth
-#define bt_tx 2
-#define bt_rx 3
+#define bt_tx 29
+#define bt_rx 28
 
 SoftwareSerial bluetooth(bt_tx, bt_rx);
 
 // Course Correction Constants
-#define default_speed 150
-#define offset_speed 25
+#define default_speed 100
+#define offset_speed 17
 #define direction_correction_threshold 1
 #define move_forward_cm 100
 
 // Phase One Object Detection
 #define object_front_threshold 30
 
+
 // Scan Modulo
 #define scan_modulo 2
 
 // Filtered Logging
-#define LOGF(LAYER, ...) if (LAYER) { char b[256]; snprintf(b, 256, __VA_ARGS__); bluetooth.print(b); Serial.print(b); }
+#define LOGF(LAYER, ...) if (LAYER) { char b[512]; snprintf(b, 512, __VA_ARGS__); bluetooth.print(b); Serial.print(b); }
 #define LOG_SENSOR_READINGS false
-#define LOG_COURSE_CORRECTION true
+#define LOG_COURSE_CORRECTION false
 #define LOG_STEPS true
+#define LOG_STEP_PROC true
 
 // Gyroscope Sensor
 MPU6050 mpu(Wire);
@@ -87,7 +89,7 @@ void goForwardOneSide(int enA, int in1, int in2, int enB, int in3, int in4, int 
 
 // Test Mode
 
-#define test_mode false
+#define test_mode true
 
 void testLoop();
 

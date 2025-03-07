@@ -20,6 +20,7 @@ double readRawDistanceSensor(int echo, int trigger) {
 }
 
 double readDistanceSensor(int echo, int trigger) {
+    /*
     int readCount = 2;
     double readingSum = 0.0;
 
@@ -36,8 +37,11 @@ double readDistanceSensor(int echo, int trigger) {
     }
 
     double ret = readingSum / readCount;
+    */
+    double ret = readRawDistanceSensor(echo, trigger);
     LOGF(LOG_SENSOR_READINGS, "Avg Distance Reading VALUE: %d \n-----", ret);
+    return ret;
 
     // If all readings were negative, then there is nothing in front of us.
-    return readCount == 0 ? DIST_SENSOR_MAX_DISTANCE : ret;
+    // return readCount == 0 ? DIST_SENSOR_MAX_DISTANCE : ret;
 }

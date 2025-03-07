@@ -61,6 +61,7 @@ void oneSideBackForward(int enA, int in1, int in2, int enB, int in3, int in4, in
 static int encoderCounter = 0; 
 static int encoderPrevReading = LOW;
 static double encoderMagic = 30.0 / 40.0;
+// static double encoderMagic = 3.5;
 
 void updateEncoders() {
     int reading = digitalRead(r1_encoder);
@@ -108,6 +109,21 @@ void moveForward(float leftSpeed, float rightSpeed) {
         r2_in2,
         rightSpeed
     );
+}
+
+// Reset encoders after.
+bool moveForwardByCms(float leftSpeed, float rightSpeed, float cms) {
+    double reading = readEncoderCms();
+
+    moveForward(leftSpeed, rightSpeed);
+    updateEncoders();
+
+    if (reading >= cms) {
+        moveForward(0, 0);
+        return false; 
+    } else {
+        return true;
+    }
 }
 
 void moveSpin() {

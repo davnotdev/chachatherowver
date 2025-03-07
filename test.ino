@@ -14,6 +14,8 @@ void testLoop() {
       c[c]\n - Go forward c cms
       x[t]\n - Move with course correction for t secs
       b[c]\n - Send an ascii code via bluetooth and read
+      r[a]\n - Correct rotation
+      z[a]\n - Check Cha Cha
 )");
         testInit = true;
     }
@@ -36,6 +38,9 @@ void testLoop() {
     moveForward(0, 0);
 
     switch (cmd) {
+        case 'a':
+            spinAndScan();
+            break;
         case 'w': {
             unsigned long start = millis();
             while (millis() - start < argument * 1000) {
@@ -80,6 +85,12 @@ void testLoop() {
             }
             moveForward(0, 0);
         } break;
+        case 'r':
+            correctRotation();
+            break;
+        case 'z':
+            checkChaCha();
+            break;
         case 'o': {
             unsigned long start = millis();
             while (millis() - start < argument * 1000) {
@@ -100,8 +111,12 @@ void testLoop() {
         case 'b':
             bluetooth.write((byte)argument);
             while (bluetooth.available()) {
-                Serial.println("Got: ", bluetooth.read());
+                Serial.print("Got: ");
+                Serial.println(bluetooth.read());
             }
+            break;
+        case 'z':
+            break;
         default:
             Serial.print("Not a command: ");
             Serial.println(buf);
