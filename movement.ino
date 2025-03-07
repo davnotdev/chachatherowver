@@ -79,18 +79,7 @@ void resetEncoders() {
     encoderCounter = 0;
 }
 
-static int wheelTimer = 0;
-static int wheelLastTime = -1;
-
 void moveForward(float leftSpeed, float rightSpeed) {
-    if (leftSpeed != 0 || rightSpeed != 0) {
-        int timeNow = millis();
-        if (wheelLastTime == -1) {
-            wheelLastTime = timeNow;
-        }
-        wheelTimer += timeNow - wheelLastTime;
-    }
-
     goForwardOneSide(
         l1_en,
         l1_in1,
@@ -111,11 +100,32 @@ void moveForward(float leftSpeed, float rightSpeed) {
     );
 }
 
+void moveBackward(float leftSpeed, float rightSpeed) {
+    goBackwardOneSide(
+        l1_en,
+        l1_in1,
+        l1_in2,
+        l2_en,
+        l2_in1,
+        l2_in2,
+        leftSpeed
+    );
+    goBackwardOneSide(
+        r1_en,
+        r1_in1,
+        r1_in2,
+        r2_en,
+        r2_in1,
+        r2_in2,
+        rightSpeed
+    );
+}
+
 // Reset encoders after.
-bool moveForwardByCms(float leftSpeed, float rightSpeed, float cms) {
+bool moveGenericByCms(float leftSpeed, float rightSpeed, float cms, void(*callback)(int, int)) {
     double reading = readEncoderCms();
 
-    moveForward(leftSpeed, rightSpeed);
+    callback(leftSpeed, rightSpeed);
     updateEncoders();
 
     if (reading >= cms) {
@@ -124,9 +134,18 @@ bool moveForwardByCms(float leftSpeed, float rightSpeed, float cms) {
     } else {
         return true;
     }
+    
 }
 
-void moveSpin() {
+bool moveForwardByCms(float leftSpeed, float rightSpeed, float cms) {
+    return moveGenericByCms(leftSpeed, rightSpeed, cms, moveForward);
+}
+
+bool moveBackwardByCms(float leftSpeed, float rightSpeed, float cms) {
+    return moveGenericByCms(leftSpeed, rightSpeed, cms, moveBackward);
+}
+
+void moveSpin(int speed = default_speed) {
     goForwardOneSide(
         r1_en,
         r1_in1,
@@ -134,7 +153,7 @@ void moveSpin() {
         r2_en,
         r2_in1,
         r2_in2,
-        default_speed
+        speed
     );
 
     goBackwardOneSide(
@@ -144,8 +163,25 @@ void moveSpin() {
         l2_en,
         l2_in1,
         l2_in2,
-        default_speed
+        speed
     );  
+}
+
+// Don't Use This.
+void correctRotation() {
+    int yaw = (int)readGyroYaw() % 360;
+
+    LOGF(LOG_STEP_PROC, "YAW: %d\n", (int)yaw);
+
+    int incToCheck = 5;
+    int i = 0;
+
+    while ((yaw >= 1 || yaw <= -1) && (i % incToCheck) == 0) {
+        LOGF(LOG_STEP_PROC, "YAW: %d\n", (int)yaw);
+        yaw = (int)readGyroYaw() % 360;
+        moveSpin();
+    }
+    moveForward(0, 0);
 }
 
 void chachaLeft(float speed) {

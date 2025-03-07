@@ -1,6 +1,6 @@
 #include "rowver.h"
 
-inline void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut) {
+inline void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut, int speed = default_speed) {
   /*
     *leftSpeedOut = default_speed;
     *rightSpeedOut = default_speed;
@@ -10,8 +10,8 @@ inline void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut) 
     double yaw = readGyroYaw();
 
     // Course Correction
-    int leftSpeed = default_speed;
-    int rightSpeed = default_speed;
+    int leftSpeed = speed;
+    int rightSpeed = speed;
 
     bool shouldLeftOffsetSpeed = yaw <= -direction_correction_threshold;
     bool shouldRightOffsetSpeed = yaw >= direction_correction_threshold;
@@ -29,22 +29,6 @@ inline void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut) 
 
     *leftSpeedOut = leftSpeed;
     *rightSpeedOut = rightSpeed;
-}
-
-void correctRotation() {
-    int yaw = (int)readGyroYaw() % 360;
-
-    LOGF(LOG_STEP_PROC, "YAW: %d\n", (int)yaw);
-
-    int incToCheck = 5;
-    int i = 0;
-
-    while ((yaw >= 1 || yaw <= -1) && (i % incToCheck) == 0) {
-        LOGF(LOG_STEP_PROC, "YAW: %d\n", (int)yaw);
-        yaw = (int)readGyroYaw() % 360;
-        moveSpin();
-    }
-    moveForward(0, 0);
 }
 
 void checkChaCha() {
@@ -100,35 +84,55 @@ void takeStep() {
     LOGF(LOG_STEP_PROC, "[1] Initial Check for Block\n");
 
     // 2. Check Blind Spots
+    float frontLeftReading = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
+    float frontRightReading = readDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
     float sideLeftReading = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
     float sideRightReading = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
 
     unsigned int startTime;
 
-    if (sideLeftReading > sideRightReading) {
-        LOGF(LOG_STEP_PROC, "[2.5] Check Left Blindspot\n");
-        startTime = millis();
-        while (millis() - startTime < 600) {
-            chachaLeft(default_speed);
-        }
-        moveForward(0, 0);
+    if (frontLeftReading > object_front_threshold && frontRightReading > object_front_threshold) {
+        if (sideLeftReading > sideRightReading) {
 
-        
-        float newReading = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
-        if (newReading <= object_front_threshold) {
-            checkChaCha();
-        }
-    } else {
-        LOGF(LOG_STEP_PROC, "[2.5] Check Right Blindspot\n");
-        startTime = millis();
-        while (millis() - startTime < 600) {
-            chachaRight(default_speed);
-        }
-        moveForward(0, 0);
-        
-        float newReading = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
-        if (newReading <= object_front_threshold) {
-            checkChaCha();
+            LOGF(LOG_STEP_PROC, "[2.5] Check Left Blindspot\n");
+            startTime = millis();
+            while (millis() - startTime < CMS_TO_TIME(18)) {
+                chachaLeft(default_speed);
+            }
+            moveForward(0, 0);
+
+            delay(100);
+            
+            float newReading = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
+            if (newReading <= object_front_threshold) {
+                checkChaCha();
+            } else {
+                startTime = millis();
+                while (millis() - startTime < CMS_TO_TIME(10)) {
+                    chachaRight(default_speed);
+                }
+                moveForward(0, 0);
+            }
+        } else {
+            LOGF(LOG_STEP_PROC, "[2.5] Check Right Blindspot\n");
+            startTime = millis();
+            while (millis() - startTime < CMS_TO_TIME(18)) {
+                chachaRight(default_speed);
+            }
+            moveForward(0, 0);
+
+            delay(100);
+            
+            float newReading = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
+            if (newReading <= object_front_threshold) {
+                checkChaCha();
+            } else {
+                startTime = millis();
+                while (millis() - startTime < CMS_TO_TIME(10)) {
+                    chachaLeft(default_speed);
+                }
+                moveForward(0, 0);
+            }
         }
     }
 
@@ -139,50 +143,32 @@ void takeStep() {
     bool shouldForward = true;
     int leftSpeed = default_speed, rightSpeed = default_speed;
 
-    int incToCheck = 1, i = 0;
-
     resetEncoders();
     while (shouldForward) {
-        if ((i % incToCheck) == 0) {
-            getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        }
-        shouldForward = moveForwardByCms(leftSpeed, rightSpeed, 100);
-        i++;
+        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
+        shouldForward = moveBackwardByCms(leftSpeed, rightSpeed, move_forward_cm);
     }
     resetEncoders();
-
-    // Move forward
-    // LOGF(LOG_STEPS, "Moving Forward Now\n");
-    // int leftSpeed, rightSpeed;
-    // int encoderReading = readEncoderCms();
-    // for (int i = 0; i < 10; i++) {
-    //     while (encoderReading <= move_forward_cm / 10.0) {
-    //         int oldEncoderReading = encoderReading;
-    //         checkChaCha();
-    //         encoderReading = oldEncoderReading;
-    //         updateEncoders();
-    //         encoderReading = readEncoderCms();
-    //         getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-    //         moveForward(leftSpeed, rightSpeed);
-    //     }
-    //     resetEncoders();
-    // }
-    
-    // moveForward(0, 0);
+    moveForward(0, 0);
 }
 
 void spinAndScan() {
     delay(3000);
     int yaw = (int)readGyroYaw();
     int originalYaw = yaw;
+    char b[64]; 
 
     while (yaw - originalYaw <= 360) {
-        moveSpin();
+        moveSpin(150);
 
         int scanDistance = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
         yaw = readGyroYaw();
         // int scanDistance = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
-        LOGF(LOG_STEP_PROC, "[CMD::DATA] %d\t%d\n", scanDistance, yaw);
+
+        // More optimimal to do it manually
+        // LOGF(LOG_STEP_PROC, "[CMD::DATA] %d,%d\n", scanDistance, yaw);
+        snprintf(b, 64, "[CMD::DATA] %d,%d\n", scanDistance, yaw);
+        bluetooth.print(b);
     }
     moveForward(0, 0);
 }
@@ -209,6 +195,10 @@ void loop() {
     moveForward(0, 0);
 
     // End Zone Code
+    endzone();
+
     done = true;
-    Serial.println("Done.");
+    LOGF(LOG_STEPS, "Done.");
+
+
 }

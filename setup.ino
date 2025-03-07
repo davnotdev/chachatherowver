@@ -35,6 +35,55 @@ void setupMotor(int en, int in1, int in2) {
     pinMode(in2, OUTPUT);
 }
 
+double calibrateCheckSpeed(int speed) {
+    int leftSpeed, rightSpeed;
+    unsigned long start = millis();
+
+    LOGF(LOG_CALIBRATE, "Trying %d\n", speed);
+
+    resetEncoders();
+    while (millis() - start < 1000) {
+        updateEncoders();
+        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
+        moveForward(leftSpeed, rightSpeed);
+    }
+    moveForward(0, 0);
+
+
+    double ret = readEncoderCms();
+    LOGF(LOG_CALIBRATE, "Done trying, got %d cm/s\n", ret);
+
+    bool shouldMove = true;
+
+    resetEncoders();
+    while (shouldMove) {
+        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
+        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, move_forward_cm);
+    }
+    resetEncoders();
+    moveForward(0, 0);
+
+    return ret;
+}
+
+void setupCalibrateSpeed() {
+    int trySpeed = 75;
+    int speed = 0;
+    
+    while (speed <= target_speed_cmps) {
+        if (trySpeed >= 225) {
+            LOGF(true, "Could not find suitable speed, stopping\n");
+            while (true) {}
+        }
+
+        speed = calibrateCheckSpeed(speed);
+        trySpeed += 25;
+    }
+
+    default_speed = speed;
+    offset_speed = speed / offset_speed_magic;
+}
+
 void setup() {
     Serial.begin(9600);
 
@@ -60,6 +109,10 @@ void setup() {
     setupDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
     setupDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
     setupDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
+
+    moveForward(0, 0);
+
+    setupCalibrateSpeed();
 
     moveForward(0, 0);
 }
