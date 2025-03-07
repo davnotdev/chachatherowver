@@ -117,6 +117,9 @@ void testLoop() {
             break;
         case 'z':
             break;
+        case 'f': // This is New
+            chachaAlign(default_speed, default_speed);
+            break;
         default:
             Serial.print("Not a command: ");
             Serial.println(buf);

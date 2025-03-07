@@ -1,3 +1,4 @@
+#include "rowver.h"
 void goForwardOneSide(int enA, int in1, int in2, int enB, int in3, int in4, int speed) {
     //Set forward rotation direction for MOTOR 1
     digitalWrite(in1, LOW);
@@ -167,6 +168,28 @@ void moveSpin(int speed = default_speed) {
     );  
 }
 
+void moveRSpin(int speed = default_speed) { // This is New
+    goForwardOneSide(
+        l1_en, 
+        l1_in1,
+        l1_in2,
+        l2_en,
+        l2_in1,
+        l2_in2,
+        speed
+    );
+
+    goBackwardOneSide(
+        r1_en,
+        r1_in1,
+        r1_in2,
+        r2_en,
+        r2_in1,
+        r2_in2,
+        speed
+    );  
+}
+
 // Don't Use This.
 void correctRotation() {
     int yaw = (int)readGyroYaw() % 360;
@@ -184,6 +207,52 @@ void correctRotation() {
     moveForward(0, 0);
 }
 
+void chachaAlign(float leftSpeed, float rightSpeed){ // This is new
+
+  double y1l = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger); // return cm
+  double y1r = readDistanceSensor(sr_ultrasonic_echo , sr_ultrasonic_trigger);
+
+  double cm = 10;
+  moveForwardByCms(leftSpeed, rightSpeed, cm); // move forward cm
+
+  double y2l = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
+  double y2r = readDistanceSensor(sr_ultrasonic_echo , sr_ultrasonic_trigger);
+  
+  double d1 = atan((y2l-y1l)/10) * 180/3.141592;
+  double d2 = atan(-1*(y2r-y1r)/10) * 180/3.141592;
+  
+  double degrees = (d1 + d2)/2;
+
+  if(degrees > 0){
+    int yaw = degrees;
+    int yaw0 = readGyroYaw(); // get rid of intial yaw
+    moveRSpin();
+
+    while(true){
+      if(yaw - ((int)readGyroYaw() - yaw0)%360 <= 0){ // stop when wanted Yaw correction is acheived
+        moveRSpin(0);
+        break;
+      }
+    }
+  }
+
+  if(degrees < 0){
+    
+    int yaw = degrees;
+    int yaw0 = readGyroYaw();
+    moveSpin();
+
+    while(true){
+      if(yaw - ((int)readGyroYaw() - yaw0)%360 >= 0){ // stop when wanted Yaw correction is acheived
+        moveSpin(0);
+        break;
+      }
+    }
+  }
+
+  moveBackwardByCms(leftSpeed, rightSpeed, cm);
+
+}
 void chachaLeft(float speed) {
     oneSideForwardBack(
         r1_en,
