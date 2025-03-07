@@ -3,6 +3,7 @@
 
 #include "Wire.h"
 #include <MPU6050_light.h>
+#include <Servo.h>
 #include <SoftwareSerial.h>
 
 // Motor L1 (enB, in3, in4)
@@ -48,6 +49,15 @@
 #define bt_rx 28
 
 SoftwareSerial bluetooth(bt_tx, bt_rx);
+
+// Claw 
+#define claw_bottom 0
+#define claw_front_left 1
+#define claw_front_right 2
+
+Servo servo_bottom;
+Servo servo_fl;
+Servo servo_fr;
 
 // Course Correction Constants
 static int default_speed = 100;

@@ -57,6 +57,13 @@ void MainUI::render(ImGuiIO& io) {
         }
 
         if (ImGui::Button("Send Data")) {
+            for (auto& blob : blobs) {
+                std::cout 
+                    << "[CMD::RES] " 
+                    << blob.center.x  << ',' 
+                    << blob.center.y << std::endl;
+            }
+            std::cout << "[CMD::END] " << std::endl;
         }
 
         ImGui::End();

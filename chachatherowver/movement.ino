@@ -1,4 +1,5 @@
 #include "rowver.h"
+
 void goForwardOneSide(int enA, int in1, int in2, int enB, int in3, int in4, int speed) {
     //Set forward rotation direction for MOTOR 1
     digitalWrite(in1, LOW);
@@ -146,6 +147,7 @@ bool moveBackwardByCms(float leftSpeed, float rightSpeed, float cms) {
     return moveGenericByCms(leftSpeed, rightSpeed, cms, moveBackward);
 }
 
+// CCW
 void moveSpin(int speed = default_speed) {
     goForwardOneSide(
         r1_en,
@@ -168,6 +170,7 @@ void moveSpin(int speed = default_speed) {
     );  
 }
 
+// CW
 void moveRSpin(int speed = default_speed) { // This is New
     goForwardOneSide(
         l1_en, 
@@ -188,6 +191,23 @@ void moveRSpin(int speed = default_speed) { // This is New
         r2_in2,
         speed
     );  
+}
+
+void spinToTargetAngle(int targetAngle) {
+    int currentYaw = (int)readGyroYaw() % 360;
+    while (true) {
+        currentYaw = (int)readGyroYaw() % 360;
+        if (abs(targetAngle - currentYaw) < 2) {
+            return;
+        }
+
+        if (targetAngle - currentYaw < 0) {
+            moveRSpin();
+        } else if (targetAngle - currentYaw > 0) {
+            moveSpin();
+        }
+    }
+    moveForward(0, 0);
 }
 
 // Don't Use This.

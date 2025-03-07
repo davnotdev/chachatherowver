@@ -3,6 +3,38 @@
 #define FINAL_X 100
 #define FINAL_Y 100
 
+// TODO
+#define claw_bottom_angle 90
+#define claw_grabber_angle 20
+
+void clawGrab() {
+    int pos;
+
+    for (pos = 0; pos <= claw_bottom_angle; pos += 1){
+        bottom.write(pos);
+        delay(15);
+    }
+    for (pos = 0; pos <= claw_bottom_angle; pos += 1){
+        // TODO: Check This.
+        servo_fl.write(pos);
+        servo_fr.write(-pos);
+        delay(15);
+    }
+}
+
+void clawRelease() {
+    for (pos = claw_bottom_angle; pos >= 0; pos -= 1){
+        bottom.write(pos);
+        delay(15);
+    }
+    for (pos = claw_bottom_angle; pos >= 0; pos -= 1){
+        // TODO: Check This.
+        servo_fl.write(pos);
+        servo_fr.write(-pos);
+        delay(15);
+    }
+}
+
 void endzone() {
     int d, theta;
 
@@ -42,7 +74,7 @@ void endzoneGoToObject(int d, int theta) {
     
     // Spin to orient back to object 
     int targetAngle = theta - 180;
-    // TODO
+    spinToTargetAngle(targetAngle);
 
     // Move to target distance
     int targetDistance = d - 25;
@@ -55,8 +87,7 @@ void endzoneGoToObject(int d, int theta) {
     resetEncoders();
     moveForward(0, 0);
 
-    // Grab object.
-    // TODO
+    clawGrab();
 
     // Move Back.
     resetEncoders();
@@ -78,7 +109,7 @@ void endzoneGoToFinal() {
 
     // Spin to orient back to final.
     int targetAngle = theta - 180;
-    // TODO: Spin until targetAngle.
+    spinToTargetAngle(targetAngle);
 
     int targetDistance = d - 50;
     resetEncoders();
@@ -89,6 +120,5 @@ void endzoneGoToFinal() {
     }
     resetEncoders();
 
-    // Release object.
-    // TODO
+    clawRelease();
 }

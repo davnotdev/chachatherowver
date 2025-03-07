@@ -16,6 +16,7 @@ void testLoop() {
       b[c]\n - Send an ascii code via bluetooth and read
       r[a]\n - Correct rotation
       z[a]\n - Check Cha Cha
+      r[a]\n - Grab Then Release Claw
 )");
         testInit = true;
     }
@@ -65,6 +66,11 @@ void testLoop() {
                 Serial.print('\n');
             }
             } break;
+        case 'r':
+            clawGrab();
+            delay(3000);
+            clawRelease();
+            break;
         case 'g': {
             unsigned long start = millis();
             while (millis() - start < argument * 1000) {

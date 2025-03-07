@@ -29,6 +29,12 @@ void setupBT() {
     Serial.print("Bluetooth started");
 }
 
+void setupClaw() {
+    servo_bottom.attach(claw_bottom);
+    servo_fl.attach(claw_front_left);
+    servo_fr(claw_front_right);
+}
+
 void setupMotor(int en, int in1, int in2) {
     pinMode(en, OUTPUT);
     pinMode(in1, OUTPUT);
@@ -48,7 +54,6 @@ double calibrateCheckSpeed(int speed) {
         moveForward(leftSpeed, rightSpeed);
     }
     moveForward(0, 0);
-
 
     double ret = readEncoderCms();
     LOGF(LOG_CALIBRATE, "Done trying, got %d cm/s\n", ret);
@@ -91,6 +96,7 @@ void setup() {
 
     setupGyroscope();
     setupBT();
+    setupClaw();
 
     setupEncoders();
 
