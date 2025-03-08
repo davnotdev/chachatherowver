@@ -1,5 +1,4 @@
 #include "rowver.h"
-
 void goForwardOneSide(int enA, int in1, int in2, int enB, int in3, int in4, int speed) {
     //Set forward rotation direction for MOTOR 1
     digitalWrite(in1, LOW);
@@ -136,7 +135,6 @@ bool moveGenericByCms(float leftSpeed, float rightSpeed, float cms, void(*callba
     } else {
         return true;
     }
-    
 }
 
 bool moveForwardByCms(float leftSpeed, float rightSpeed, float cms) {
@@ -147,7 +145,6 @@ bool moveBackwardByCms(float leftSpeed, float rightSpeed, float cms) {
     return moveGenericByCms(leftSpeed, rightSpeed, cms, moveBackward);
 }
 
-// CCW
 void moveSpin(int speed = default_speed) {
     goForwardOneSide(
         r1_en,
@@ -170,7 +167,6 @@ void moveSpin(int speed = default_speed) {
     );  
 }
 
-// CW
 void moveRSpin(int speed = default_speed) { // This is New
     goForwardOneSide(
         l1_en, 
@@ -193,23 +189,6 @@ void moveRSpin(int speed = default_speed) { // This is New
     );  
 }
 
-void spinToTargetAngle(int targetAngle) {
-    int currentYaw = (int)readGyroYaw() % 360;
-    while (true) {
-        currentYaw = (int)readGyroYaw() % 360;
-        if (abs(targetAngle - currentYaw) < 2) {
-            return;
-        }
-
-        if (targetAngle - currentYaw < 0) {
-            moveRSpin();
-        } else if (targetAngle - currentYaw > 0) {
-            moveSpin();
-        }
-    }
-    moveForward(0, 0);
-}
-
 // Don't Use This.
 void correctRotation() {
     int yaw = (int)readGyroYaw() % 360;
@@ -227,50 +206,105 @@ void correctRotation() {
     moveForward(0, 0);
 }
 
+void spinToTargetAngle(int targetAngle) {  // new
+    int currentYaw = (int)readGyroYaw() % 360;
+    while (true) {
+        currentYaw = (int)readGyroYaw() % 360;
+        if (abs(targetAngle - currentYaw) < 2) {
+            return;
+        }
+
+        if (targetAngle - currentYaw < 0) {
+            moveRSpin();
+        } else if (targetAngle - currentYaw > 0) {
+            moveSpin();
+        }
+    }
+    moveForward(0, 0);
+}
+
 void chachaAlign(float leftSpeed, float rightSpeed){ // This is new
+
+  moveForward(0, 0);
 
   double y1l = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger); // return cm
   double y1r = readDistanceSensor(sr_ultrasonic_echo , sr_ultrasonic_trigger);
 
   double cm = 10;
-  moveForwardByCms(leftSpeed, rightSpeed, cm); // move forward cm
+  // moveForwardByCms(leftSpeed, rightSpeed, cm); // move forward cm
+  double reading = 0.0;
+    while (reading <= cm) {
+        moveForward(leftSpeed, rightSpeed);
+        reading = readEncoderCms();
+        Serial.println(reading);
+        updateEncoders();
+    }
+    moveForward(0, 0);
 
   double y2l = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
   double y2r = readDistanceSensor(sr_ultrasonic_echo , sr_ultrasonic_trigger);
   
   double d1 = atan((y2l-y1l)/10) * 180/3.141592;
-  double d2 = atan(-1*(y2r-y1r)/10) * 180/3.141592;
+  double d2 = atan((y2r-y1r)/-10) * 180/3.141592;
   
-  double degrees = (d1 + d2)/2;
+  double degrees = d1;
+  Serial.print("y1l: ");
+  Serial.println(y1l);
+  Serial.print("y2l: ");
+  Serial.println(y2l);
 
-  if(degrees > 0){
-    int yaw = degrees;
-    int yaw0 = readGyroYaw(); // get rid of intial yaw
-    moveRSpin();
+  // Serial.print("y1r: ");
+  // Serial.println(y1r);
+  // Serial.print("y2r: ");
+  // Serial.println(y2r);
 
-    while(true){
-      if(yaw - ((int)readGyroYaw() - yaw0)%360 <= 0){ // stop when wanted Yaw correction is acheived
-        moveRSpin(0);
-        break;
-      }
+  // Serial.print("d1: ");
+  // Serial.println(d1);
+  
+  // Serial.print("d2: ");
+  // Serial.println(d2);
+  
+  Serial.print("Degrees: ");
+  Serial.println(degrees);
+
+  spinToTargetAngle((int)degrees);
+
+  // if(degrees > 0){
+  //   int yaw0 = readGyroYaw(); // get rid of intial yaw
+  //   Serial.println(yaw0); // print statement
+  //   // moveRSpin();
+
+  //   while(true){
+  //     Serial.println(((int)readGyroYaw() - yaw0)%360); // print statment
+  //     if(degrees - ((int)readGyroYaw() - yaw0)%360 <= 0){ // stop when wanted Yaw correction is acheived
+  //       // moveRSpin(0);
+  //       break;
+  //     }
+  //   }
+  // }
+
+  // if(degrees < 0){
+  //   int yaw0 = readGyroYaw();
+  //   Serial.println(yaw0);  
+  //   // moveSpin();
+
+  //   while(true){
+  //     Serial.println(((int)readGyroYaw() - yaw0)%360); // print statemet
+  //     if(degrees - ((int)readGyroYaw() - yaw0)%360 >= 0){ // stop when wanted Yaw correction is acheived
+  //       // moveSpin(0);
+  //       break;
+  //     }
+  //   }
+
+  // moveBackwardByCms(leftSpeed, rightSpeed, cm);
+    reading = 0.0;
+    while (reading <= cm) {
+        moveBackward(leftSpeed, rightSpeed);
+        reading = readEncoderCms();
+        Serial.println(reading);
+        updateEncoders();
     }
-  }
-
-  if(degrees < 0){
-    
-    int yaw = degrees;
-    int yaw0 = readGyroYaw();
-    moveSpin();
-
-    while(true){
-      if(yaw - ((int)readGyroYaw() - yaw0)%360 >= 0){ // stop when wanted Yaw correction is acheived
-        moveSpin(0);
-        break;
-      }
-    }
-  }
-
-  moveBackwardByCms(leftSpeed, rightSpeed, cm);
+    moveBackward(0, 0);
 
 }
 void chachaLeft(float speed) {

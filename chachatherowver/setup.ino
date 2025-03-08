@@ -32,7 +32,8 @@ void setupBT() {
 void setupClaw() {
     servo_bottom.attach(claw_bottom);
     servo_fl.attach(claw_front_left);
-    servo_fr(claw_front_right);
+    servo_fr.attach(claw_front_right);
+    clawRelease();
 }
 
 void setupMotor(int en, int in1, int in2) {
@@ -50,7 +51,7 @@ double calibrateCheckSpeed(int speed) {
     resetEncoders();
     while (millis() - start < 1000) {
         updateEncoders();
-        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
+        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed, speed);
         moveForward(leftSpeed, rightSpeed);
     }
     moveForward(0, 0);
@@ -58,21 +59,30 @@ double calibrateCheckSpeed(int speed) {
     double ret = readEncoderCms();
     LOGF(LOG_CALIBRATE, "Done trying, got %d cm/s\n", ret);
 
+    if ((int)ret == 0) {
+        return 0.0;
+    }
+
+    resetEncoders();
+
     bool shouldMove = true;
 
+    /*
     resetEncoders();
     while (shouldMove) {
         getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, move_forward_cm);
+        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, speed);
     }
     resetEncoders();
+    */
     moveForward(0, 0);
 
     return ret;
 }
 
 void setupCalibrateSpeed() {
-    int trySpeed = 75;
+    int defaultTrySpeed = 75;
+    int trySpeed = defaultTrySpeed;
     int speed = 0;
     
     while (speed <= target_speed_cmps) {
@@ -81,12 +91,15 @@ void setupCalibrateSpeed() {
             while (true) {}
         }
 
-        speed = calibrateCheckSpeed(speed);
+        speed = calibrateCheckSpeed(trySpeed);
         trySpeed += 25;
     }
 
-    default_speed = speed;
-    offset_speed = speed / offset_speed_magic;
+    LOGF(LOG_CALIBRATE, "Final Answer %d cm/s %d wheel speed\n", speed, trySpeed);
+
+    default_speed = trySpeed;
+    default_speed_cmps = speed;
+    offset_speed = trySpeed / offset_speed_magic;
 }
 
 void setup() {
@@ -97,7 +110,6 @@ void setup() {
     setupGyroscope();
     setupBT();
     setupClaw();
-
     setupEncoders();
 
     moveForward(0, 0);
@@ -117,8 +129,9 @@ void setup() {
     setupDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
 
     moveForward(0, 0);
-
-    setupCalibrateSpeed();
+    if (!skip_speed_calibration) {
+        setupCalibrateSpeed();
+    }
 
     moveForward(0, 0);
 }

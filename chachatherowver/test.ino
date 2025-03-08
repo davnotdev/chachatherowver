@@ -16,7 +16,6 @@ void testLoop() {
       b[c]\n - Send an ascii code via bluetooth and read
       r[a]\n - Correct rotation
       z[a]\n - Check Cha Cha
-      r[a]\n - Grab Then Release Claw
 )");
         testInit = true;
     }
@@ -39,6 +38,12 @@ void testLoop() {
     moveForward(0, 0);
 
     switch (cmd) {
+        case 'f': // This is New
+            Serial.println("this work");
+            delay(3000);
+            chachaAlign(120, 120);
+            // moveForwardByCms(120, 120, 10);
+            break;
         case 'a':
             spinAndScan();
             break;
@@ -66,11 +71,6 @@ void testLoop() {
                 Serial.print('\n');
             }
             } break;
-        case 'r':
-            clawGrab();
-            delay(3000);
-            clawRelease();
-            break;
         case 'g': {
             unsigned long start = millis();
             while (millis() - start < argument * 1000) {
@@ -122,9 +122,6 @@ void testLoop() {
             }
             break;
         case 'z':
-            break;
-        case 'f': // This is New
-            chachaAlign(default_speed, default_speed);
             break;
         default:
             Serial.print("Not a command: ");

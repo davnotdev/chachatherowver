@@ -152,27 +152,6 @@ void takeStep() {
     moveForward(0, 0);
 }
 
-void spinAndScan() {
-    delay(3000);
-    int yaw = (int)readGyroYaw();
-    int originalYaw = yaw;
-    char b[64]; 
-
-    while (yaw - originalYaw <= 360) {
-        moveSpin(150);
-
-        int scanDistance = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
-        yaw = readGyroYaw();
-        // int scanDistance = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
-
-        // More optimimal to do it manually
-        // LOGF(LOG_STEP_PROC, "[CMD::DATA] %d,%d\n", scanDistance, yaw);
-        snprintf(b, 64, "[CMD::DATA] %d,%d\n", scanDistance, yaw);
-        bluetooth.print(b);
-    }
-    moveForward(0, 0);
-}
-
 static bool done = false;
 
 void loop() {

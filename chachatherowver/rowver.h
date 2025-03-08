@@ -51,9 +51,9 @@
 SoftwareSerial bluetooth(bt_tx, bt_rx);
 
 // Claw 
-#define claw_bottom 0
-#define claw_front_left 1
-#define claw_front_right 2
+#define claw_bottom A0
+#define claw_front_left A2
+#define claw_front_right A1
 
 Servo servo_bottom;
 Servo servo_fl;
@@ -61,9 +61,10 @@ Servo servo_fr;
 
 // Course Correction Constants
 static int default_speed = 100;
-static int offset_speed = 0;
+static int default_speed_cmps = 0;
+static int offset_speed = 17;
 
-#define CMS_TO_TIME(D) ((D * 1000) / default_speed)
+#define CMS_TO_TIME(D) ((D * 1000) / default_speed_cmps)
 
 #define target_speed_cmps 10
 #define offset_speed_magic 6
@@ -108,6 +109,7 @@ void goForwardOneSide(int enA, int in1, int in2, int enB, int in3, int in4, int 
 // Test Mode
 
 #define test_mode true
+#define skip_speed_calibration false
 
 void testLoop();
 
