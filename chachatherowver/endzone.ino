@@ -3,7 +3,6 @@
 #define FINAL_X 100
 #define FINAL_Y 100
 
-// TODO
 void clawGrab() {
     // servo_bottom.write(90);
     servo_fl.write(180 - (100 + 10));
@@ -19,11 +18,12 @@ void clawRelease() {
 void endzone() {
     spinAndScan();
 
-    int d, theta;
+    // TODO
+    int d = 60, theta = -90;
 
-    if (endzoneGetResponse(&d, &theta) == false) {
-        return;
-    }
+    // if (endzoneGetResponse(&d, &theta) == false) {
+    //    return;
+    // }
 
     endzoneGoToObject(d, theta);
     endzoneGoToFinal(FINAL_X, FINAL_Y);
@@ -31,9 +31,9 @@ void endzone() {
 
 bool endzoneGetResponse(int *d, int *theta) {
     #define MAX_BLOBS 32
-    int i = 0;
-    int btresDistances[MAX_BLOBS];
-    int btresThetas[MAX_BLOBS];
+    int resIdx = 0;
+    int btResDistances[MAX_BLOBS];
+    int btResThetas[MAX_BLOBS];
 
     while (true) {
         String buf = Serial.readStringUntil('\n');
@@ -43,19 +43,44 @@ bool endzoneGetResponse(int *d, int *theta) {
         if (buf.indexOf("[CMD::END]") != -1) {
             return;
         } else {
-            if (buf.indexOf("[CMD::" == -1) || buf.indexOf(' ') == -1) {
+            if (buf.indexOf("[CMD::RES] " == -1) || buf.indexOf(',') == -1) {
                 LOGF(LOG_EZ_BLUETOOTH, "Got Bad Response\n");
                 return false;
             }
             int dStart = buf.indexOf(' ') + 1;
             int thStart = buf.indexOf(',') + 1;
 
-            *d = atoi(buf.substring(dStart, thStart - 2).c_str());
-            *theta = atoi(buf.substring(thStart).c_str());
+            btResDistances[resIdx] = atoi(buf.substring(dStart, thStart - 2).c_str());
+            btResThetas[resIdx] = atoi(buf.substring(thStart).c_str());
+            resIdx += 1;
 
-            LOGF(LOG_EZ_BLUETOOTH, "Response: d: %d, theta: %d\n", *d, *theta);
+            if (resIdx >= MAX_BLOBS) {
+                LOGF(LOG_EZ_BLUETOOTH, "Too many blobs sent!\n");
+                break;
+            }
+
+            LOGF(LOG_EZ_BLUETOOTH, "Response: d: %d, theta: %d\n", btResDistances[resIdx], btResThetas[resIdx]);
         }
     }
+
+    int minIt = 0;
+    int minTheta = 0;
+
+    for (int i = 0; i < resIdx; i++) {
+        int distanceIt = btResDistances[i];
+        int thetaIt = btResThetas[i];
+
+        if (distanceIt % 360 >= -180 && thetaIt <= 0) {
+            int dIt = distanceIt * sin(thetaIt);
+            if (dIt < minTheta) {
+                minIt = i;
+                minTheta = thetaIt;
+            }
+        }
+    }
+
+    *d = btResDistances[minIt];
+    *theta = btResThetas[minIt];
 
     LOGF(LOG_EZ_BLUETOOTH, "Final Choice: d: %d, theta: %d\n", *d, *theta);
 
@@ -81,9 +106,9 @@ void spinAndScan() {
     
         int left = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
         int right = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
-        snprintf(b, 64, "[CMD::DATA] %d,0\n", left);
-        bluetooth.print(b);
-        snprintf(b, 64, "[CMD::DATA] %d,180\n", right);
+        // snprintf(b, 64, "[CMD::DATA] %d,%d\n", left, -readEncoderCms());
+        // bluetooth.print(b);
+        snprintf(b, 64, "[CMD::DATA] %d,%d\n", right, -readEncoderCms());
         bluetooth.print(b);
     }
     resetEncoders();
@@ -103,9 +128,9 @@ void spinAndScan() {
         shouldMove = moveForwardByCms(leftSpeed, rightSpeed, targetDistance);
         int left = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
         int right = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
-        snprintf(b, 64, "[CMD::DATA] %d,0\n", left);
-        bluetooth.print(b);
-        snprintf(b, 64, "[CMD::DATA] %d,180\n", right);
+        // snprintf(b, 64, "[CMD::DATA] %d,0\n", left, readEncoderCms());
+        // bluetooth.print(b);
+        snprintf(b, 64, "[CMD::DATA] %d,%d\n", right, readEncoderCms());
         bluetooth.print(b);
     }
     resetEncoders();

@@ -51,6 +51,7 @@ double calibrateCheckSpeed(int speed) {
     resetEncoders();
     while (millis() - start < 1000) {
         updateEncoders();
+        offset_speed = speed / 6;
         getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed, speed);
         moveForward(leftSpeed, rightSpeed);
     }
@@ -81,12 +82,12 @@ double calibrateCheckSpeed(int speed) {
 }
 
 void setupCalibrateSpeed() {
-    int defaultTrySpeed = 75;
+    int defaultTrySpeed = 150;
     int trySpeed = defaultTrySpeed;
     int speed = 0;
     
     while (speed <= target_speed_cmps) {
-        if (trySpeed >= 225) {
+        if (trySpeed >= 300) {
             LOGF(true, "Could not find suitable speed, stopping\n");
             while (true) {}
         }
@@ -109,7 +110,7 @@ void setup() {
 
     setupGyroscope();
     setupBT();
-    setupClaw();
+    // setupClaw();
     setupEncoders();
 
     moveForward(0, 0);

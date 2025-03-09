@@ -81,7 +81,7 @@ static int offset_speed = 17;
 // Filtered Logging
 #define LOGF(LAYER, ...) if (LAYER) { char b[128]; snprintf(b, 128, __VA_ARGS__); bluetooth.print(b); Serial.print(b); }
 #define LOG_CALIBRATE true
-#define LOG_SENSOR_READINGS false
+#define LOG_SENSOR_READINGS true
 #define LOG_COURSE_CORRECTION false
 #define LOG_STEPS true
 #define LOG_STEP_PROC true
@@ -108,7 +108,7 @@ void goForwardOneSide(int enA, int in1, int in2, int enB, int in3, int in4, int 
 
 // Test Mode
 
-#define test_mode true
+#define test_mode false
 #define skip_speed_calibration false
 
 void testLoop();

@@ -3,7 +3,7 @@
 double readGyroYaw() {
     mpu.update();
     double reading = mpu.getAngleZ();
-    LOGF(LOG_SENSOR_READINGS, "Yaw Reading %d \n", reading);
+    LOGF(LOG_SENSOR_READINGS, "Yaw Reading %d \n", (int)reading);
     return reading;
 }
 

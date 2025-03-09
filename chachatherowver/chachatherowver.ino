@@ -55,6 +55,7 @@ void checkChaCha() {
 
         // Dodge the Block
         while (distanceCmFrontLeft < object_front_threshold || distanceCmFrontRight < object_front_threshold) {
+            mpu.update();
             LOGF(LOG_STEPS, "Dodging Dist FL: %d FR: %d SL: %d SR: %d\n", distanceCmFrontLeft, distanceCmFrontRight, distanceCmSideLeft, distanceCmSideRight);
             if (nudge < 0) {
                 chachaLeft(default_speed);
@@ -72,6 +73,7 @@ void checkChaCha() {
         } else {
             chachaRight(default_speed);
         }
+        mpu.update();
         delay(600);
     }
 
@@ -97,6 +99,7 @@ void takeStep() {
             LOGF(LOG_STEP_PROC, "[2.5] Check Left Blindspot\n");
             startTime = millis();
             while (millis() - startTime < CMS_TO_TIME(18)) {
+                mpu.update();
                 chachaLeft(default_speed);
             }
             moveForward(0, 0);
@@ -109,6 +112,7 @@ void takeStep() {
             } else {
                 startTime = millis();
                 while (millis() - startTime < CMS_TO_TIME(10)) {
+                    mpu.update();
                     chachaRight(default_speed);
                 }
                 moveForward(0, 0);
@@ -117,6 +121,7 @@ void takeStep() {
             LOGF(LOG_STEP_PROC, "[2.5] Check Right Blindspot\n");
             startTime = millis();
             while (millis() - startTime < CMS_TO_TIME(18)) {
+                mpu.update();
                 chachaRight(default_speed);
             }
             moveForward(0, 0);
@@ -129,6 +134,7 @@ void takeStep() {
             } else {
                 startTime = millis();
                 while (millis() - startTime < CMS_TO_TIME(10)) {
+                    mpu.update();
                     chachaLeft(default_speed);
                 }
                 moveForward(0, 0);
@@ -146,10 +152,12 @@ void takeStep() {
     resetEncoders();
     while (shouldForward) {
         getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        shouldForward = moveBackwardByCms(leftSpeed, rightSpeed, move_forward_cm);
+        shouldForward = moveForwardByCms(leftSpeed, rightSpeed, move_forward_cm);
     }
     resetEncoders();
     moveForward(0, 0);
+
+    chachaAlign();
 }
 
 static bool done = false;

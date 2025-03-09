@@ -41,7 +41,7 @@ void testLoop() {
         case 'f': // This is New
             Serial.println("this work");
             delay(3000);
-            chachaAlign(120, 120);
+            // chachaAlign(120, 120);
             // moveForwardByCms(120, 120, 10);
             break;
         case 'a':
@@ -105,9 +105,11 @@ void testLoop() {
             moveForward(0, 0);
           } break;
         case 'c':
+            int leftSpeed, rightSpeed;
             double reading = 0.0;
               while (reading <= argument) {
-                  moveForward(default_speed, default_speed);
+                  getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
+                  moveForward(leftSpeed, rightSpeed);
                   reading = readEncoderCms();
                   Serial.println(reading);
                   updateEncoders();
@@ -128,6 +130,4 @@ void testLoop() {
             Serial.println(buf);
     }
 }
-
-
 

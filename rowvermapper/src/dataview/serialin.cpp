@@ -30,8 +30,10 @@ static void dataReader() {
 
             bufMutex.lock();
             buf.push_back({
-                dist * cos(theta),
-                dist * sin(theta),
+                (double)dist,
+                (double)angle,
+                /* dist * cos(theta), */
+                /* dist * sin(theta), */
             });
             bufMutex.unlock();
         }

@@ -83,7 +83,7 @@ void MainUI::render(ImGuiIO& io) {
             }
         }
 
-        drawSquareCenter(position, glm::vec2(5.0f, 5.0f), color);
+        drawSquareCenter(position, glm::vec2(8.0f, 8.0f), color);
     }
 
     for (auto& dataPoint: blobs) {
