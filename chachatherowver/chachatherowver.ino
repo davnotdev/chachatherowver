@@ -1,6 +1,6 @@
 #include "rowver.h"
 
-inline void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut, int speed = default_speed) {
+inline void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut, int speed = default_speed, bool useBackMode = false, int relTo = 0) {
   /*
     *leftSpeedOut = default_speed;
     *rightSpeedOut = default_speed;
@@ -8,6 +8,7 @@ inline void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut, 
     */
 
     double yaw = readGyroYaw();
+    yaw -= relTo;
 
     // Course Correction
     int leftSpeed = speed;
@@ -27,8 +28,13 @@ inline void getSpeedWithCourseCorrection(int *leftSpeedOut, int *rightSpeedOut, 
 
     LOGF(LOG_COURSE_CORRECTION, "Should Yah %d Left Speed: %d, Left Speed %d, Right Speed: %d\n", (short)yaw, (short)shouldLeftOffsetSpeed, leftSpeed, rightSpeed);
 
-    *leftSpeedOut = leftSpeed;
-    *rightSpeedOut = rightSpeed;
+    if (!useBackMode) {
+        *leftSpeedOut = leftSpeed;
+        *rightSpeedOut = rightSpeed;
+    } else {
+        *leftSpeedOut = rightSpeed;
+        *rightSpeedOut = leftSpeed;
+    }
 }
 
 void checkChaCha() {
@@ -44,7 +50,7 @@ void checkChaCha() {
         if (distanceCmSideLeft > distanceCmSideRight) {
             nudge = -1.0f;
         } else if (distanceCmSideLeft == distanceCmSideRight) {
-            if (distanceCmSideRight <= object_front_threshold) {
+            if (distanceCmFrontRight <= object_front_threshold) {
                 nudge = -1.0f;
             } else {
                 nudge = 1.0f;
@@ -56,6 +62,12 @@ void checkChaCha() {
         // Dodge the Block
         while (distanceCmFrontLeft < object_front_threshold || distanceCmFrontRight < object_front_threshold) {
             mpu.update();
+
+            distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
+            distanceCmFrontRight = readDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
+            distanceCmSideLeft = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
+            distanceCmSideRight = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
+
             LOGF(LOG_STEPS, "Dodging Dist FL: %d FR: %d SL: %d SR: %d\n", distanceCmFrontLeft, distanceCmFrontRight, distanceCmSideLeft, distanceCmSideRight);
             if (nudge < 0) {
                 chachaLeft(default_speed);
@@ -63,8 +75,11 @@ void checkChaCha() {
                 chachaRight(default_speed);
             }
 
-            distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
-            distanceCmFrontRight = readDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
+            if (distanceCmSideLeft <= 5) {
+                nudge = 1.0f;
+            } else if (distanceCmSideRight <= 5) {
+                nudge = -1.0f;
+            }
         }
     
         // Final Nudge to account for blind spot
@@ -74,7 +89,7 @@ void checkChaCha() {
             chachaRight(default_speed);
         }
         mpu.update();
-        delay(600);
+        delay(CMS_TO_TIME(20));
     }
 
     moveForward(0, 0);
@@ -93,6 +108,7 @@ void takeStep() {
 
     unsigned int startTime;
 
+    LOGF(LOG_STEP_PROC, "[2.5] Reading for Blindspot l %d r %d\n", (int)sideLeftReading, (int)sideRightReading);
     if (frontLeftReading > object_front_threshold && frontRightReading > object_front_threshold) {
         if (sideLeftReading > sideRightReading) {
 
@@ -111,7 +127,7 @@ void takeStep() {
                 checkChaCha();
             } else {
                 startTime = millis();
-                while (millis() - startTime < CMS_TO_TIME(10)) {
+                while (millis() - startTime < CMS_TO_TIME(4)) {
                     mpu.update();
                     chachaRight(default_speed);
                 }
@@ -133,7 +149,7 @@ void takeStep() {
                 checkChaCha();
             } else {
                 startTime = millis();
-                while (millis() - startTime < CMS_TO_TIME(10)) {
+                while (millis() - startTime < CMS_TO_TIME(4)) {
                     mpu.update();
                     chachaLeft(default_speed);
                 }
@@ -142,6 +158,10 @@ void takeStep() {
         }
     }
 
+    moveForward(0, 0);
+
+    // 2.99. Once more.
+    checkChaCha();
     moveForward(0, 0);
 
     // 3. Move One Step.

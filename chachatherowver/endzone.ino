@@ -16,7 +16,7 @@ void clawRelease() {
 }
 
 void endzone() {
-    spinAndScan();
+    // spinAndScan();
 
     // TODO
     int d = 60, theta = -90;
@@ -26,9 +26,10 @@ void endzone() {
     // }
 
     endzoneGoToObject(d, theta);
-    endzoneGoToFinal(FINAL_X, FINAL_Y);
+    // endzoneGoToFinal(FINAL_X, FINAL_Y);
 }
 
+/*
 bool endzoneGetResponse(int *d, int *theta) {
     #define MAX_BLOBS 32
     int resIdx = 0;
@@ -86,30 +87,41 @@ bool endzoneGetResponse(int *d, int *theta) {
 
     return true;
 }
+*/
 
-void spinAndScan() {
-    delay(3000);
-    char b[64]; 
-
+void spinAndScan(int* distFromSideWall) {
+    delay(2000);
+    // char b[64]; 
+    
     int distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
-    int distanceCmFrontRight = readDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
-    int targetDistance = (distanceCmFrontRight + distanceCmFrontLeft) / 2;
+    int targetDistance = distanceCmFrontLeft - 10;
     int leftSpeed, rightSpeed;
     bool shouldMove;
+
+    int distToFrontWall = 0;
+    *distFromSideWall = 99;
+    int wallDist = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
 
     // Scan backward.
     resetEncoders();
     shouldMove = true;
     while (shouldMove) {
-        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, targetDistance);
+        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed, default_speed, true);
+        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, 100 - (targetDistance + 50));
     
-        int left = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
+        // int left = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
+        distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
         int right = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
-        // snprintf(b, 64, "[CMD::DATA] %d,%d\n", left, -readEncoderCms());
+        // snprintf(b, 64, "[CMD::DATA] %d,0\n", left, -readEncoderCms());
         // bluetooth.print(b);
-        snprintf(b, 64, "[CMD::DATA] %d,%d\n", right, -readEncoderCms());
-        bluetooth.print(b);
+        // snprintf(b, 64, "[CMD::DATA] %d,%d\n", right, -readEncoderCms());
+        // bluetooth.print(b);
+        if (right < wallDist - 5 && wallDist > 5) {
+            if (right < *distFromSideWall) {
+                *distFromSideWall = right;
+                distToFrontWall = distanceCmFrontLeft;
+            }
+        }
     }
     resetEncoders();
     // Return.
@@ -117,7 +129,7 @@ void spinAndScan() {
     shouldMove = true;
     while (shouldMove) {
         getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        shouldMove = moveForwardByCms(leftSpeed, rightSpeed, targetDistance);
+        shouldMove = moveForwardByCms(leftSpeed, rightSpeed, 100 - (targetDistance + 50));
     }
     // Scan forward.
     resetEncoders();
@@ -126,20 +138,30 @@ void spinAndScan() {
     while (shouldMove) {
         getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
         shouldMove = moveForwardByCms(leftSpeed, rightSpeed, targetDistance);
+        distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
         int left = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
         int right = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
         // snprintf(b, 64, "[CMD::DATA] %d,0\n", left, readEncoderCms());
         // bluetooth.print(b);
-        snprintf(b, 64, "[CMD::DATA] %d,%d\n", right, readEncoderCms());
-        bluetooth.print(b);
+        // snprintf(b, 64, "[CMD::DATA] %d,%d\n", right, readEncoderCms());
+        // bluetooth.print(b);
+        if (right < wallDist - 5 && wallDist > 5) {
+            if (right < *distFromSideWall) {
+                *distFromSideWall = right;
+                distToFrontWall = distanceCmFrontLeft;
+            }
+        }
     }
     resetEncoders();
-    // Return.
     moveForward(0, 0);
+
+    LOGF(true, "d to front wall: %d, d to block: %d", distToFrontWall, *distFromSideWall)
+
+    // Return.
     shouldMove = true;
     while (shouldMove) {
-        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, targetDistance);
+        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed, default_speed, true);
+        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, distToFrontWall - 10);
     }
     resetEncoders();
     moveForward(0, 0);
@@ -158,24 +180,29 @@ void endzoneGoToObject(int d, int theta) {
     resetEncoders();
     shouldMove = true;
     while (shouldMove) {
-        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
+        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed, default_speed, true, targetAngle);
         shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, targetDistance);
     }
     resetEncoders();
     moveForward(0, 0);
 
-    // clawGrab();
+    delay(2000);
+    clawGrab();
+    delay(1500);
 
     // Move Back.
     resetEncoders();
     shouldMove = true;
     while (shouldMove) {
-        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        shouldMove = moveForwardByCms(leftSpeed, rightSpeed, targetDistance);
+        getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed, default_speed, false, targetAngle);
+        shouldMove = moveForwardByCms(leftSpeed, rightSpeed, targetDistance + 115);
     }
     resetEncoders();
+
+    clawRelease();
 }
 
+/*
 void endzoneGoToFinal(int final_x, int final_y) {
     bool shouldMove;
     int leftSpeed, rightSpeed;
@@ -202,3 +229,4 @@ void endzoneGoToFinal(int final_x, int final_y) {
 
     clawRelease();
 }
+*/

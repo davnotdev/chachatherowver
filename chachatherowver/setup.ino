@@ -82,7 +82,7 @@ double calibrateCheckSpeed(int speed) {
 }
 
 void setupCalibrateSpeed() {
-    int defaultTrySpeed = 150;
+    int defaultTrySpeed = 75;
     int trySpeed = defaultTrySpeed;
     int speed = 0;
     

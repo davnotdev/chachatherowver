@@ -16,6 +16,7 @@ void testLoop() {
       b[c]\n - Send an ascii code via bluetooth and read
       r[a]\n - Correct rotation
       z[a]\n - Check Cha Cha
+      e[a]\n - Test Endzone case a
 )");
         testInit = true;
     }
@@ -45,8 +46,27 @@ void testLoop() {
             // moveForwardByCms(120, 120, 10);
             break;
         case 'a':
-            spinAndScan();
+            /*
+            int distFromSideWall = -1;
+            spinAndScan(&distFromSideWall);
+            moveForward(0, 0);
+            LOGF(true, "d to block %d\n", distFromSideWall);
             break;
+            */
+            int distFromSideWall = -1;
+                    spinAndScan(&distFromSideWall);
+                    LOGF(true, "d to block %d\n", distFromSideWall);
+                    moveForward(0, 0);
+                    endzoneGoToObject(distFromSideWall, 270);
+        case 'e':
+            switch(argument) {
+                case 2:
+                    int distFromSideWall = -1;
+                    spinAndScan(&distFromSideWall);
+                    moveForward(0, 0);
+                    endzoneGoToObject(distFromSideWall, 270);
+                    break;
+            }
         case 'w': {
             unsigned long start = millis();
             while (millis() - start < argument * 1000) {
@@ -115,6 +135,7 @@ void testLoop() {
                   updateEncoders();
               }
               moveForward(0, 0);
+              resetEncoders();
               break;
         case 'b':
             bluetooth.write((byte)argument);

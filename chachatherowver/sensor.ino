@@ -35,7 +35,9 @@ double readDistanceSensor(int echo, int trigger) {
             readingSum += reading;
         }
     }
+    */
 
+    /*
     double ret = readingSum / readCount;
     */
     double ret = readRawDistanceSensor(echo, trigger);
