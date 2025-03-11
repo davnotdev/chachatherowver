@@ -109,8 +109,8 @@ void setup() {
     moveForward(0, 0);
 
     setupGyroscope();
-    setupBT();
-    // setupClaw();
+    // setupBT();
+    setupClaw();
     setupEncoders();
 
     moveForward(0, 0);

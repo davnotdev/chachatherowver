@@ -63,11 +63,6 @@ void checkChaCha() {
         while (distanceCmFrontLeft < object_front_threshold || distanceCmFrontRight < object_front_threshold) {
             mpu.update();
 
-            distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
-            distanceCmFrontRight = readDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
-            distanceCmSideLeft = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
-            distanceCmSideRight = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
-
             LOGF(LOG_STEPS, "Dodging Dist FL: %d FR: %d SL: %d SR: %d\n", distanceCmFrontLeft, distanceCmFrontRight, distanceCmSideLeft, distanceCmSideRight);
             if (nudge < 0) {
                 chachaLeft(default_speed);
@@ -80,6 +75,11 @@ void checkChaCha() {
             } else if (distanceCmSideRight <= 5) {
                 nudge = -1.0f;
             }
+
+            distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
+            distanceCmFrontRight = readDistanceSensor(fr_ultrasonic_echo, fr_ultrasonic_trigger);
+            distanceCmSideLeft = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
+            distanceCmSideRight = readDistanceSensor(sr_ultrasonic_echo, sr_ultrasonic_trigger);
         }
     
         // Final Nudge to account for blind spot

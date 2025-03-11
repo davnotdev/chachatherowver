@@ -33,8 +33,8 @@
 #define fr_ultrasonic_trigger 24
 
 // Ultrasonic Sensors Side
-#define sl_ultrasonic_echo 49
-#define sl_ultrasonic_trigger 48
+#define sl_ultrasonic_echo 47
+#define sl_ultrasonic_trigger 46
 #define sr_ultrasonic_echo 51
 #define sr_ultrasonic_trigger 50
 
@@ -80,11 +80,11 @@ static int offset_speed = 17;
 
 // Filtered Logging
 #define LOGF(LAYER, ...) if (LAYER) { char b[128]; snprintf(b, 128, __VA_ARGS__); bluetooth.print(b); Serial.print(b); }
-#define LOG_CALIBRATE true
+#define LOG_CALIBRATE false
 #define LOG_SENSOR_READINGS false
 #define LOG_COURSE_CORRECTION false
-#define LOG_STEPS true
-#define LOG_STEP_PROC true
+#define LOG_STEPS false
+#define LOG_STEP_PROC false
 
 #define LOG_EZ_BLUETOOTH true
 
@@ -108,8 +108,8 @@ void goForwardOneSide(int enA, int in1, int in2, int enB, int in3, int in4, int 
 
 // Test Mode
 
-#define test_mode 1
-#define skip_speed_calibration false
+#define test_mode 0
+#define skip_speed_calibration 0
 
 void testLoop();
 

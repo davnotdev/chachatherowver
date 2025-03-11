@@ -41,6 +41,9 @@ double readDistanceSensor(int echo, int trigger) {
     double ret = readingSum / readCount;
     */
     double ret = readRawDistanceSensor(echo, trigger);
+    if (ret <= 0.0 || ret >= 2000) {
+        return readDistanceSensor(echo, trigger);
+    }
     LOGF(LOG_SENSOR_READINGS, "Avg Distance Reading VALUE: %d \n-----", ret);
     return ret;
 

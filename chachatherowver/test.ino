@@ -45,34 +45,6 @@ void testLoop() {
             // chachaAlign(120, 120);
             // moveForwardByCms(120, 120, 10);
             break;
-        case 'a':
-            /*
-            int distFromSideWall = -1;
-            spinAndScan(&distFromSideWall);
-            moveForward(0, 0);
-            LOGF(true, "d to block %d\n", distFromSideWall);
-            break;
-            */
-            int distFromSideWall = -1;
-                    spinAndScan(&distFromSideWall);
-                    LOGF(true, "d to block %d\n", distFromSideWall);
-                    moveForward(0, 0);
-                    endzoneGoToObject(distFromSideWall, 270);
-        case 'e':
-            switch(argument) {
-                case 2:
-                    int distFromSideWall = -1;
-                    spinAndScan(&distFromSideWall);
-                    moveForward(0, 0);
-                    endzoneGoToObject(distFromSideWall, 270);
-                    break;
-            }
-        case 'w': {
-            unsigned long start = millis();
-            while (millis() - start < argument * 1000) {
-                moveForward(default_speed, default_speed);
-            }
-            } break;
         case 'u': {
             unsigned long start = millis();
             while (millis() - start < argument * 1000) {
@@ -91,6 +63,41 @@ void testLoop() {
                 Serial.print('\n');
             }
             } break;
+        case 'A':
+            clawGrab();
+            delay(2000);
+            clawRelease();
+            break;
+        case 'a':
+            /*
+            int distFromSideWall = -1;
+            spinAndScan(&distFromSideWall);
+            moveForward(0, 0);
+            LOGF(true, "d to block %d\n", distFromSideWall);
+            break;
+            */
+            int distFromSideWall = -1;
+                    spinAndScan(&distFromSideWall);
+                    LOGF(true, "d to block %d\n", distFromSideWall);
+                    moveForward(0, 0);
+                    endzoneGoToObject(distFromSideWall, 270);
+        
+        case 'e':
+            switch(argument) {
+                case 2:
+                    int distFromSideWall = -1;
+                    spinAndScan(&distFromSideWall);
+                    moveForward(0, 0);
+                    endzoneGoToObject(distFromSideWall, 270);
+                    break;
+            }
+        case 'w': {
+            unsigned long start = millis();
+            while (millis() - start < argument * 1000) {
+                moveForward(default_speed, default_speed);
+            }
+            } break;
+        
         case 'g': {
             unsigned long start = millis();
             while (millis() - start < argument * 1000) {

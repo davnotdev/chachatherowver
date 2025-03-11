@@ -4,28 +4,38 @@
 #define FINAL_Y 100
 
 void clawGrab() {
-    // servo_bottom.write(90);
+    servo_bottom.write(0);
+    delay(1000);
     servo_fl.write(180 - (100 + 10));
     servo_fr.write(100);
+    delay(1000);
+    servo_bottom.write(45);
 }
 
 void clawRelease() {
-    // servo_bottom.write(90);
+    servo_bottom.write(90);
     servo_fl.write(180);
     servo_fr.write(0);
 }
 
 void endzone() {
+    // setupClaw();
+
+    int distFromSideWall = -1;
+    spinAndScan(&distFromSideWall);
+    LOGF(true, "d to block %d\n", distFromSideWall);
+    moveForward(0, 0);
+    endzoneGoToObject(distFromSideWall, 270);
     // spinAndScan();
 
     // TODO
-    int d = 60, theta = -90;
+    // int d = 60, theta = -90;
 
     // if (endzoneGetResponse(&d, &theta) == false) {
     //    return;
     // }
 
-    endzoneGoToObject(d, theta);
+    // endzoneGoToObject(d, theta);
     // endzoneGoToFinal(FINAL_X, FINAL_Y);
 }
 
@@ -107,7 +117,7 @@ void spinAndScan(int* distFromSideWall) {
     shouldMove = true;
     while (shouldMove) {
         getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed, default_speed, true);
-        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, 100 - (targetDistance + 50));
+        shouldMove = moveBackwardByCms(leftSpeed, rightSpeed, 100 - (targetDistance + 40));
     
         // int left = readDistanceSensor(sl_ultrasonic_echo, sl_ultrasonic_trigger);
         distanceCmFrontLeft = readDistanceSensor(fl_ultrasonic_echo, fl_ultrasonic_trigger);
@@ -129,7 +139,7 @@ void spinAndScan(int* distFromSideWall) {
     shouldMove = true;
     while (shouldMove) {
         getSpeedWithCourseCorrection(&leftSpeed, &rightSpeed);
-        shouldMove = moveForwardByCms(leftSpeed, rightSpeed, 100 - (targetDistance + 50));
+        shouldMove = moveForwardByCms(leftSpeed, rightSpeed, 100 - (targetDistance + 40));
     }
     // Scan forward.
     resetEncoders();
